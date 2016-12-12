@@ -10,7 +10,8 @@ Copyright Matthew Wilson, 20116.
 #include<unistd.h>
 #include<stdlib.h>
 #include<string.h>
-
+#include<errno.h>
+#include<pwd.h>
 
 int check_for_builtins(char* token[99]) {
 	int x;
@@ -68,11 +69,11 @@ forker(char* token[99]) {
 				
 		waitpid(child_pid, &status, 0);
 		
-		if (status == 0) {
-			printf("child end success\n");
-		}
-		else {
-			printf("child end failure\n");
+		//if (status == 0) {
+		//	printf("child end success\n");
+		//}
+		if (status != 0) {
+			printf("%s: command not found\n", token[0]);
 		}
 	}
 	else {
@@ -82,11 +83,19 @@ forker(char* token[99]) {
 	
 }
 
-
 // change directory built-in
 cd_builtin(char* token[99]) {
-	if (chdir(token[1]) != 0) {
-		printf("no dir: %s\n", token[1]);
+	struct passwd *pw = getpwuid(getuid());
+
+	// check for just "CD" and go to user's home dir
+	if (token[1] == NULL) {
+		if (chdir(pw->pw_dir) != 0) {
+			printf("%s: %s\n", token[1], strerror(errno));
+		}
+	}
+	// or attempt to cd(token0) to somedir(token1)
+	else if (chdir(token[1]) != 0) {
+		printf("%s: %s\n", token[1], strerror(errno));
 	}
 	else {
 		prompt();
@@ -115,6 +124,13 @@ int arg_checker(char line[1024]) {
 	if (strcmp(token[0], "cd") == 0) {
 		cd_builtin(token);
 	}
+	// or check for "pwd"
+	else if (strcmp(token[0], "pwd") == 0) {
+		char cwd[1024];
+		if (getcwd(cwd, sizeof(cwd)) != NULL) {
+			printf("%s\n", cwd);
+		}
+	}
 	else {
 		forker(token);
 	}
@@ -123,34 +139,49 @@ int arg_checker(char line[1024]) {
 int prompt() {
 	char cwd[1024];
 	char line[1024];
-
-		// if we hit one of the above, say ? then run an ls on builtin commands?
-do {
+	int ch;
+	
+	do {
 		if (getcwd(cwd, sizeof(cwd)) != NULL) {
 			printf("%s> ", cwd);
 		}
 		else {
 			printf("> ");
 		}
-	
-		fgets(line, sizeof(line), stdin);
-		line[strlen(line) - 1] = '\0';
-	
-		if (strcmp(line, "exit") == 0) {
-			printf("exiting\n");
-			exit(EXIT_SUCCESS);
+		// wait for CTRL+D
+		if (fgets(line, sizeof(line), stdin) == NULL) {
+			printf("\n");
+			return(0);
 		}
-	} while ((strlen(line) < 1));
-	// proceed to arg_checker before forking
-	arg_checker(line);
-}
 
+		//if (line == 0x0C) {
+		//	system("clear");
+		//}
+
+		line[strlen(line) - 1] = '\0';
+	// nopppe
+		ch = atoi(line);
+		if (ch == 0x0C)
+			system("clear");
+
+	
+		// otherwise proceed to arg_checker		
+		if (strlen(line) > 0) {
+			arg_checker(line);
+		} 
+	} while(1);
+}
 
 int main(int argc, char* argv[]) {
 	system("clear");
 	printf("welcome to seeshell\n"); 
 	while (1) {
-		prompt();
+		if (prompt() == 0) {
+			exit(EXIT_SUCCESS);
+		}
+		else {
+			exit(EXIT_FAILURE);
+		}
 	}
 }
 
