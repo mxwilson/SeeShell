@@ -6,7 +6,6 @@ No warranty. Software provided as is.
 Copyright Matthew Wilson, 20116.
 */
 
-
 #include<stdio.h>
 #include<unistd.h>
 #include<stdlib.h>
@@ -132,8 +131,10 @@ int arg_checker(char line[1024]) {
 	
 	token[0] = strtok(user_input, delim);
 
+	//printf("first pass, tokenize spaces\n");
+
 	while (token[i] != NULL) {
-		printf("A:%d %s\n", i, token[i]);
+		printf("%d: %s\n", i, token[i]);
 		i++;
 		//printf("%d\n", i);
 		token[i] = strtok(NULL, delim);
@@ -195,13 +196,13 @@ int pipe_parser(char* token[99], int i) {
 		
 			int c = 0;
 			int r = 0;
-			/*
+			
 			// ie: "|la"
 			// next new token to be pipe, following new token is command
 			if (pos == 0 && cnt == 1) {
 				printf("-!next tokens are: %s %s\n", "|", token[x]+1);
 			}
-
+			/*
 			// ie: "la|"  - pipe in last position: remove it, new token
 			else if (cnt == 1 && (((strlen(token[x])) - pos) == 1) ) {
 				token[x][len - 1] = '\0';
@@ -218,7 +219,7 @@ int pipe_parser(char* token[99], int i) {
 			char myline[1024];
 			strcpy(myline, token[x]);	
 		
-			printf("MYLINE: %s\n", myline);
+			//printf("MYLINE: %s\n", myline);
 		
 			
 			// will have to control |com
@@ -232,7 +233,7 @@ int pipe_parser(char* token[99], int i) {
 				liltoken[c] = "|";
 				liltoken[c+1] = strtok(myline, "|");
 		
-				printf("LT0: %s\n", liltoken[c]);
+				//printf("LT0: %s\n", liltoken[c]);
 				c = c+1;
 				while (token[c] != NULL) {
 					c++;
@@ -241,7 +242,7 @@ int pipe_parser(char* token[99], int i) {
 				}
 				
 				for (r = 0; r < c; r++) {
-					printf("!:%d %s\n", r, liltoken[r]);
+					printf("liltoken:%d %s\n", r, liltoken[r]);
 				}
 			}
 
@@ -360,7 +361,7 @@ int prompt() {
 		}
 
 		line[strlen(line) - 1] = '\0';
-		printf("L:%s\n", line);
+		printf("Line :%s\n", line);
 			
 		// otherwise proceed to arg_checker		
 		if (strlen(line) > 0) {
