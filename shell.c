@@ -17,13 +17,17 @@ int check_for_builtins(char* token[99]) {
 	int x;
 	char* list[4] = {"?", "help", "yo"};
 
-	while (x < sizeof(list)/sizeof(list[0])) {
+	//printf("bb\n");
+	//while (x < sizeof(list)/sizeof(list[0])) {
+	for (x = 0; x < sizeof(list) / sizeof(list[0]); x++) {
 		if (strcmp(token[0], list[x]) == 0) {
 			printf("found\n");
 			return(0);
+		
+		//x++;
 		}
-		x++;
 	}
+	return(1);
 }
 
 
@@ -40,12 +44,15 @@ child_process(char* token[99]) {
 	// run the concatenated program ie ./bin/progname. 
 	// visit 'builtins' func to check if program is not found
 	
-	if ((execvp(prog_to_run, token) == -1) || (check_for_builtins(token) != 0)) {
-		printf("%s: command not found\n", token[0]);
-		_exit(EXIT_FAILURE);
+	if (execvp(prog_to_run, token) == -1) {
+		//if (check_for_builtins(token) != 0) {
+			printf("%s: command not found\n", token[0]);
+			_exit(EXIT_FAILURE);
+		}
+	//}
+	else {
+		_exit(EXIT_SUCCESS);
 	}
-	_exit(EXIT_SUCCESS);
-	
 }
 
 forker(char* token[99]) {
@@ -103,24 +110,38 @@ cd_builtin(char* token[99]) {
 }
 
 int arg_checker(char line[1024]) {
+	
 	//tokenize the incoming command
 	int j, i = 0;
 	char user_input[1024];
-	char* delim = " ";
+	char* delim = " "; // MY DELIMITER 
 	char* token[99];
 
 	//printf("arg checker\n");
+	char user_input_copy[1024];
+	strcpy(user_input_copy, line);
+	
+	char* rez = strstr(user_input_copy, "|");
+	
+	if (rez != NULL) {
+		printf("pipe found\n");
+	}
+
+
+	// space delim checker
 	
 	strcpy(user_input, line);
 	
 	token[0] = strtok(user_input, delim);
 
 	while (token[i] != NULL) {
+		printf("%d %s\n", i, token[i]);
 		i++;
+		//printf("%d\n", i);
 		token[i] = strtok(NULL, delim);
 	}
-	
- 	// check for "cd" otherwise go to forker
+
+	// check for "cd" otherwise go to forker
 	if (strcmp(token[0], "cd") == 0) {
 		cd_builtin(token);
 	}
@@ -134,6 +155,21 @@ int arg_checker(char line[1024]) {
 	else {
 		forker(token);
 	}
+}
+
+int history(char line[1024]) {
+	FILE* f;
+
+	f = fopen("./.history", "a");
+
+	if (f == NULL) {
+		return(1);
+	}
+	else {
+		fprintf(f, "%s\n", line);
+	}
+	fclose(f);
+	return(0);
 }
 
 int prompt() {
@@ -158,13 +194,14 @@ int prompt() {
 	
 		// otherwise proceed to arg_checker		
 		if (strlen(line) > 0) {
+			history(line);
 			arg_checker(line);
 		} 
 	} while(1);
 }
 
 int main(int argc, char* argv[]) {
-	system("clear");
+	//system("clear");
 	printf("welcome to seeshell\n"); 
 	while (1) {
 		if (prompt() == 0) {
