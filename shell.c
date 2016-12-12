@@ -13,13 +13,13 @@ Copyright Matthew Wilson, 20116.
 #include<errno.h>
 #include<pwd.h>
 
-const char* HISTFILE = "/home/mm/c/shell/.history";
+const char* HISTFILE = "./shell/.history";
 
 
 child_process(char* token[99]) {
 	//printf("Now in the child process\n");
 
-	char bindir[1048] = "/home/mm/c/shell/bin/";
+	char bindir[1048] = "./shell/bin/";
 	char prog_to_run[1048]; 
 	strcat(bindir, token[0]);
 	strcpy(prog_to_run, bindir);
