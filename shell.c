@@ -1,3 +1,11 @@
+/*
+seeshell.c - bash-like unix shell replacement
+ 
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+No warranty. Software provided as is.
+Copyright Matthew Wilson, 20116.
+*/
+
 #include<stdio.h>
 #include<unistd.h>
 #include<stdlib.h>
@@ -5,13 +13,13 @@
 #include<errno.h>
 #include<pwd.h>
 
-const char* HISTFILE = "./shell/.history";
+const char* HISTFILE = "/home/mm/c/shell/.history";
 
 
 child_process(char* token[99]) {
 	//printf("Now in the child process\n");
 
-	char bindir[1048] = "./bin/";
+	char bindir[1048] = "/home/mm/c/shell/bin/";
 	char prog_to_run[1048]; 
 	strcat(bindir, token[0]);
 	strcpy(prog_to_run, bindir);
@@ -463,6 +471,7 @@ int main(int argc, char* argv[]) {
 	if (program_init() == 1) {
 		exit(EXIT_FAILURE);
 	}
+	
 	//system("clear");
 	printf("Welcome to seeshell\n");
 	while(1) {
