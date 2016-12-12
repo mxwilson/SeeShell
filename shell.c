@@ -40,9 +40,9 @@ child_process(char* token[99]) {
 	// run the concatenated program ie ./bin/progname. 
 	// visit 'builtins' func to check if program is not found
 	
-	if (execvp(prog_to_run, token) == -1) {
-		if (check_for_builtins(token) != 0) 
-			_exit(EXIT_FAILURE);
+	if ((execvp(prog_to_run, token) == -1) || (check_for_builtins(token) != 0)) {
+		printf("%s: command not found\n", token[0]);
+		_exit(EXIT_FAILURE);
 	}
 	_exit(EXIT_SUCCESS);
 	
@@ -67,14 +67,14 @@ forker(char* token[99]) {
 		// here, we could sleep() to allow the child to execute
 		// or wait() to wait until child finishes
 				
-		waitpid(child_pid, &status, 0);
-		
+		//waitpid(child_pid, &status, 0);
+		wait(NULL);
 		//if (status == 0) {
 		//	printf("child end success\n");
 		//}
-		if (status != 0) {
-			printf("%s: command not found\n", token[0]);
-		}
+		//if (status != 0) {
+		//	printf("%s: command not found\n", token[0]);
+		//}
 	}
 	else {
 		printf("forking error\n");
@@ -154,16 +154,7 @@ int prompt() {
 			return(0);
 		}
 
-		//if (line == 0x0C) {
-		//	system("clear");
-		//}
-
 		line[strlen(line) - 1] = '\0';
-	// nopppe
-		ch = atoi(line);
-		if (ch == 0x0C)
-			system("clear");
-
 	
 		// otherwise proceed to arg_checker		
 		if (strlen(line) > 0) {
