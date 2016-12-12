@@ -137,7 +137,7 @@ int arg_checker(char line[1024]) {
 	//printf("first pass, tokenize spaces\n");
 
 	while (token[i] != NULL) {
-		printf("%d: %s\n", i, token[i]);
+		printf("tokens: %d: %s\n", i, token[i]);
 		i++;
 		//printf("%d\n", i);
 		token[i] = strtok(NULL, delim);
@@ -171,7 +171,7 @@ int pipe_parser(char* token[99], int i) {
 
 	char* final_tokens[99];
 	int ft = 0;
-
+	//int a = 0;
 
 	// also do: last is a pipe: expect another command to run at prompt
 	
@@ -189,11 +189,11 @@ int pipe_parser(char* token[99], int i) {
 				cnt++;
 				tmp++;
 			}
-			printf("P %d: %s - has pipe in pos ", x, token[x]);
+			//printf("P %d: %s - has pipe in pos ", x, token[x]);
 			pos = (int)(rez - token[x]);
-			printf("%d ", pos);
-			printf("num of pipes: %d ", cnt);
-			printf("len: %d\n", strlen(token[x]));
+			//printf("%d ", pos);
+			//printf("num of pipes: %d ", cnt);
+			//printf("len: %d\n", strlen(token[x]));
 		
 			int c = 0;
 			int r = 0;
@@ -201,12 +201,12 @@ int pipe_parser(char* token[99], int i) {
 			// ie: "|la"
 			// next new token to be pipe, following new token is command
 			if (pos == 0 && cnt == 1) {
-				printf("!%s\n", token[x]-2);
-				printf("-!next tokens are: %s %s\n", "|", token[x]+1);
+				//printf("next tokens are: %s %s\n", "|", token[x]+1);
+				final_tokens[ft] = "|";
 				ft++;
+				final_tokens[ft] = token[x]+1;
 				ft = ft + 1;
 			}
-			
 	
 			//tokenize the incoming command, with pipe delim
 			char myline[1024];
@@ -229,15 +229,16 @@ int pipe_parser(char* token[99], int i) {
 				}
 				
 				for (r = 0; r < c; r++) {
-					printf("liltoken:%d %s\n", r, liltoken[r]);
+					//printf("liltoken:%d %s\n", r, liltoken[r]);
+					final_tokens[ft] = liltoken[r];
 					ft++;
 				}
 			}
 
+			// THIS ONE MAY BE CAUSING PROBLEMS
 		 	// control for com1|com2 and not: com|com2|	
 			if (pos > 0)  {
-				
-				char* subfinaltok[99];
+				//char* subfinaltok[99];
 
 				int d = 0;
 				int a = 0;
@@ -245,44 +246,66 @@ int pipe_parser(char* token[99], int i) {
 				printf("K2\n");
 				liltoken2[0] = strtok(myline, "|");
 		
+				printf("ft starting at: %d. cnt: %d\n", ft, cnt);	
+
 				while (liltoken2[a] != NULL) {
-					printf("tokenz %d %s\n", a, liltoken2[a]);
-				
-					//d++;
+					//printf("Tx a:%d ft:%d %s\n", a, ft, liltoken2[a]);
+					//final_tokens[ft] = liltoken2[a];
+					
+					final_tokens[ft] = malloc(strlen(liltoken2[a]) + 1);
+					final_tokens[ft] = strdup(liltoken2[a]);	
+					//printf("az %d %s\n", ft, final_tokens[ft]);
+					//d++;  
+					ft++;
 					a++;	
 					if (d != cnt) {	
 						//printf("d is: %d\n", d);
 						liltoken2[a] = "|";
-						printf("tokenzz %d %s\n", a, liltoken2[a]);
+					        //printf("Tp a:%d ft:%d %s\n", a, ft, liltoken2[a]);
+						final_tokens[ft] = malloc(strlen(liltoken2[a]) + 1);
+						final_tokens[ft] = strdup(liltoken2[a]);
+						
+						//printf("azz %d %s\n", ft, final_tokens[ft]);
+						ft++;
 						d++;
 						a++;
 					}
 
 					liltoken2[a] = strtok(NULL, "|");
-					//printf("C3 %d\n", d);
+					
+					//printf("A %d\n", a);
 					//d=d+1;
 				}
-				printf("new array total %d\n", a);		
-				ft = ft + a;
+				//printf("new array total %d\n", a);		
+				//ft = ft + a;
+				//ft++;
+				//ft = ft+1;	
 			}
-			
+			printf("ft ending at: %d\n", ft);
+		
+
 		}
 				
 		// or is it a pre-parsed pipe?
 		else if (strcmp(token[x], "|") == 0) {
 			printf("%d: %s - is pipe\n", x, token[x]);
-			//final_tokens[ft] = strcpy(final_tokens[ft], "|");
+			final_tokens[ft] = "|";
 			ft++;
 		}
 		// has no pipe
 		else {
 			printf("NP %d: %s\n", x, token[x]);
-			//final_tokens[ft] = strcpy(final_tokens[ft], token[x]);
+			final_tokens[ft] = token[x];
 			ft++;
 		}	
 	}	
 
-	printf("finaltoken count: %d\n", ft);
+	printf("grand unified final token count: %d\n", ft);
+
+	for (x = 0; x < ft; x++) {
+		printf("%d: %s\n", x, final_tokens[x]);
+	}
+
 
 }
 
@@ -440,7 +463,6 @@ int main(int argc, char* argv[]) {
 	if (program_init() == 1) {
 		exit(EXIT_FAILURE);
 	}
-	
 	//system("clear");
 	printf("Welcome to seeshell\n");
 	while(1) {
