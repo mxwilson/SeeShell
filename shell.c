@@ -16,21 +16,13 @@ int check_for_builtins(char* token[99]) {
 	int x;
 	char* list[4] = {"?", "help", "yo"};
 
-	// if we hit one of the above, say ? then run an ls on builtin commands?
 	while (x < sizeof(list)/sizeof(list[0])) {
 		if (strcmp(token[0], list[x]) == 0) {
 			printf("found\n");
-
-			//if (strcmp(token[0], list[2]) == 0) {
-			//	if (chdir(token[1]) != 0) {
-			//		printf("no dir: %s\n", token[1]);
-			//		return(1);
-			//	}
 			return(0);
 		}
-	x++;
+		x++;
 	}
-	return(1);
 }
 
 
@@ -38,7 +30,6 @@ int check_for_builtins(char* token[99]) {
 
 child_process(char* token[99]) {
 	//printf("Now in the child process\n");
-
 	char bindir[1048] = "./bin/";
 	char prog_to_run[1048]; 
 	strcat(bindir, token[0]);
@@ -49,7 +40,7 @@ child_process(char* token[99]) {
 	// visit 'builtins' func to check if program is not found
 	
 	if (execvp(prog_to_run, token) == -1) {
-		if (check_for_builtins(token) == 1) 
+		if (check_for_builtins(token) != 0) 
 			_exit(EXIT_FAILURE);
 	}
 	_exit(EXIT_SUCCESS);
@@ -88,9 +79,18 @@ forker(char* token[99]) {
 		printf("forking error\n");
 		exit(EXIT_FAILURE);
 	}
+	
+}
 
 
-		
+// change directory built-in
+cd_builtin(char* token[99]) {
+	if (chdir(token[1]) != 0) {
+		printf("no dir: %s\n", token[1]);
+	}
+	else {
+		prompt();
+	}
 }
 
 int arg_checker(char line[1024]) {
@@ -111,19 +111,21 @@ int arg_checker(char line[1024]) {
 		token[i] = strtok(NULL, delim);
 	}
 	
-	// for (j = 0; j < i; j++) {
-	// 	printf("%d: %s\n", j, token[j]);
-	// }
- 
-	
-	forker(token);
+ 	// check for "cd" otherwise go to forker
+	if (strcmp(token[0], "cd") == 0) {
+		cd_builtin(token);
+	}
+	else {
+		forker(token);
+	}
 }
 
 int prompt() {
 	char cwd[1024];
 	char line[1024];
 
-	do {
+		// if we hit one of the above, say ? then run an ls on builtin commands?
+do {
 		if (getcwd(cwd, sizeof(cwd)) != NULL) {
 			printf("%s> ", cwd);
 		}
@@ -146,7 +148,7 @@ int prompt() {
 
 int main(int argc, char* argv[]) {
 	system("clear");
-	printf("welcome to seeshell\n");
+	printf("welcome to seeshell\n"); 
 	while (1) {
 		prompt();
 	}
