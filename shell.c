@@ -12,14 +12,15 @@ Copyright Matthew Wilson, 20116.
 #include<string.h>
 #include<errno.h>
 #include<pwd.h>
+#include<fcntl.h>
 
-const char* HISTFILE = "./shell/.history";
+const char* HISTFILE = "/home/mm/c/shell/.history";
 
 
 child_process(char* token[99]) {
 	//printf("Now in the child process\n");
 
-	char bindir[1048] = "./shell/bin/";
+	char bindir[1048] = "/home/mm/c/shell/bin/";
 	char prog_to_run[1048]; 
 	strcat(bindir, token[0]);
 	strcpy(prog_to_run, bindir);
@@ -74,7 +75,7 @@ forker(char* token[99]) {
 	
 }
 
-int builtin_checker(char* token[99]) {
+int builtin_checker(char* token[99], int argc) {
 	struct passwd *pw = getpwuid(getuid());
 
 	// check for "CD" and go to home dir
@@ -102,12 +103,22 @@ int builtin_checker(char* token[99]) {
 		}
 		return(0);
 	}
-	else if (strcmp(token[0], "cl") == 0) {
+	else if ((strcmp(token[0], "cl") == 0) || (strcmp(token[0], "clear") == 0)) {
 		system("clear");
 		return(0);
 	}
-	else if (strcmp(token[0], "history") == 0) {
-		history(NULL, 1);
+	else if (strcmp(token[0], "history") == 0) { 
+		if (argc == 1) {
+			history(NULL, 1, 0); // show history
+		}
+		if (argc > 1) {	
+			if (strcmp(token[1], "-c") == 0) {
+				history(NULL, 1, 1); // or delete history
+			}
+			else {
+				printf("history syntax err\n");
+			}
+		}
 		return(0);
 	}
 	else if (strcmp(token[0], "help") == 0) {
@@ -160,7 +171,7 @@ int arg_checker(char line[1024]) {
 	// now go to builtin checker or forker
 	// only if a pipe has not been found
 	if (rez == NULL) {
-		if (builtin_checker(token) == 1) {
+		if (builtin_checker(token, i) == 1) {
 			forker(token);
 		}
 	}
@@ -317,9 +328,9 @@ int pipe_parser(char* token[99], int i) {
 
 }
 
-// write to history file
+// manage history file
 
-int history(char line[1024], int builtin) {
+int history(char line[1024], int builtin, int delete) {
 	FILE* f;
 	int c;
 	int x = 0;
@@ -328,7 +339,7 @@ int history(char line[1024], int builtin) {
 	
 	int maxhistory = 20;
 
-	// if we're not calling the history builtin, count the records and add to file
+	// if we're not calling the history builtin, count records and add to file
 	if (builtin != 1) {
 	
 		f = fopen(HISTFILE, "r+");
@@ -400,21 +411,37 @@ int history(char line[1024], int builtin) {
 		fclose(f);
 		return(0);
 	}
-	// otherwise, display history if calling builtin
+	// otherwise, display or delete history if calling builtin
 	if (builtin == 1) { 
-		x = 0;
-		f = fopen(HISTFILE, "r");
+		// delete history by calling history -c or history(NULL, 1, 1)
+		if (delete == 1) {
+			int fd = open(HISTFILE, O_WRONLY); //truncate
 
-		if (f == NULL) {
-			printf("history file error: %s\n", strerror(errno));
-			return(1);
+			if (fd == -1) {
+				printf("history file error: %s\n", strerror(errno));
+				return(1);
+			}
+			else {
+				ftruncate(fd, 0);
+				fsync(fd);
+			}
+			close(fd);
 		}
-		while (fgets(theline, sizeof theline, f) != NULL) {
-			theline[strlen(theline) - 1] = '\0';
-			printf("%d: %s\n", x, theline);
-			x++;
+		else { // display history
+			x = 0;
+			f = fopen(HISTFILE, "r");
+
+			if (f == NULL) {
+				printf("history file error: %s\n", strerror(errno));
+				return(1);
+			}
+			while (fgets(theline, sizeof theline, f) != NULL) {
+				theline[strlen(theline) - 1] = '\0';
+				printf("%d: %s\n", x, theline);
+				x++;
+			}
+			fclose(f);
 		}
-		fclose(f);
 		return(0);
 	}
 }
@@ -458,7 +485,7 @@ int prompt() {
 				
 		// otherwise proceed to history writer and arg_checker		
 		if (strlen(line) > 0) {
-			if (history(line, 0) != 0) {
+			if (history(line, 0, 0) != 0) {
 				return(1);
 			}
 			arg_checker(line);
