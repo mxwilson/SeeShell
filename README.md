@@ -1,3 +1,5 @@
+![alt_text](./seeshell.jpg "seeshell")
+
 # SeeShell 0.1
 
 ## Synopsis
@@ -14,7 +16,7 @@ help - show help.
 
 history [-c] - show history or clear history.
 
-pwd - print working directory
+pwd - print working directory.
 
 ...
 
