@@ -194,6 +194,9 @@ int builtin_checker(char* token[99], int argc) {
 		printf("go to help\n");
 		return(0);
 	}
+	else if (strcmp(token[0], "exit") == 0) {
+		exit(EXIT_SUCCESS);
+	}
 	// no builtin found, head to forker and search for coreutil
 	else {
 		return(1);
@@ -579,11 +582,10 @@ int prompt() {
 }
 
 int main(int argc, char* argv[]) {
-	
+
 	if (program_init() == 1) {
 		exit(EXIT_FAILURE);
 	}
-	
 	//system("clear");
 	printf("Welcome to seeshell\n");
 	while(1) {
