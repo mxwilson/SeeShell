@@ -8,7 +8,7 @@ SeeShell is a Bash-like shell replacement for Unix and Linux.
 
 ## Built-in commands
 
-cd - change directory.
+cd - change directory (cd ~ (home), cd ~user, cd ~/dir, cd ~user/dir, etc ...)
 
 cl, clear - clear screen.
 

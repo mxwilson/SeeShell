@@ -76,24 +76,93 @@ forker(char* token[99]) {
 }
 
 int builtin_checker(char* token[99], int argc) {
-	struct passwd *pw = getpwuid(getuid());
+	struct passwd *pw;
+	char thedir[99];
 
-	// check for "CD" and go to home dir
 	if (strcmp(token[0], "cd") == 0) {
-		if (token[1] == NULL) {
+		// cd and cd ~
+		if ((argc == 1) || (argc == 2) && (strcmp(token[1], "~") == 0)) {
+			pw = getpwuid(getuid());
+
 			if (chdir(pw->pw_dir) != 0) {
 				printf("%s: %s\n", token[0], strerror(errno));
 				return(0);
 			}
 		}
-		else {
-			// or attempt to cd(token0) to somedir(token1)
+		// cd ~/dir/
+		else if ((argc == 2) && (strncmp(token[1], "~/", 2) == 0)) {
+			pw = getpwuid(getuid());
+			strcpy(thedir, pw->pw_dir);
+			strcat(thedir, token[1]+1);
+
+			if (pw == NULL) {
+				printf("%s: No such file or directory\n", token[1]+1);
+				return(0);
+			}
+					
+			if (chdir(thedir) != 0) {
+				printf("%s: %s\n", token[0], strerror(errno));
+				return(0);
+			}
+			return(0);  // hmmm
+		}
+		// cd ~user
+		else if ((argc == 2) && (strncmp(token[1], "~", 1) == 0)) {
+			char* cdtokens[10];
+			int x = 0;
+			
+			cdtokens[x] = strtok(token[1]+1, "/");
+		
+			while(cdtokens[x] != NULL) {
+				x++;
+				cdtokens[x] = strtok(NULL, "/");
+			}
+			
+			struct passwd *pw2;
+	
+			pw2 = getpwnam(cdtokens[0]);
+				
+			if (pw2 == NULL) {
+				printf("%s: No such file or directory\n", token[1]+1);
+				return(0);
+			}
+			// cd ~user	
+			if (x == 1) {
+				strcpy(thedir, pw2->pw_dir);
+				//printf("thedir: %s\n", thedir);
+			}	
+			// cd ~user/dir
+			if (x != 1) {
+				int y;
+				strcpy(thedir, pw2->pw_dir);
+				//printf("0thedir: %s\n", thedir);
+		
+				for (y = 1; y < x; y++) {		
+					strcat(thedir, "/");	
+					strcat(thedir, cdtokens[y]);
+					//printf("ee %d %s\n", y, cdtokens[y]);
+				}
+			}
+			// error out 
+			if (chdir(thedir) != 0) {
+				printf(":) %s: %s\n", thedir, strerror(errno));
+				return(0);
+			}	
+		}
+		// cd /somedir
+		else if (argc == 2) {
+			if (chdir(token[1]) != 0) {
+				printf("%s: %s\n", token[0], strerror(errno));
+				return(0);
+			}
+		}
+		// or attempt to cd(token0) to somedir(token1)
+		else if ((argc == 2) && (strncmp(token[1], "~", 1) != 0)) {
 			if (chdir(token[1]) != 0) {
 				printf("%s: %s\n", token[1], strerror(errno));
 				return(0);
 			}
 		}
-		return(0);
 	}
 	// or check for "pwd"
 	else if (strcmp(token[0], "pwd") == 0) {
@@ -125,6 +194,7 @@ int builtin_checker(char* token[99], int argc) {
 		printf("go to help\n");
 		return(0);
 	}
+	// no builtin found, head to forker and search for coreutil
 	else {
 		return(1);
 	}
@@ -337,11 +407,10 @@ int history(char line[1024], int builtin, int delete) {
 	int nrecs = 0;
 	char theline[500];	
 	
-	int maxhistory = 20;
+	int maxhistory = 2000;
 
 	// if we're not calling the history builtin, count records and add to file
 	if (builtin != 1) {
-	
 		f = fopen(HISTFILE, "r+");
 
 		if (f == NULL) {
@@ -415,19 +484,35 @@ int history(char line[1024], int builtin, int delete) {
 	if (builtin == 1) { 
 		// delete history by calling history -c or history(NULL, 1, 1)
 		if (delete == 1) {
+			char q[10];	
 			int fd = open(HISTFILE, O_WRONLY); //truncate
 
 			if (fd == -1) {
 				printf("history file error: %s\n", strerror(errno));
 				return(1);
 			}
-			else {
-				ftruncate(fd, 0);
-				fsync(fd);
+		
+			while(1) {
+               			printf("delete history? y/n\n");
+               			fgets(q, sizeof (q), stdin);
+
+				if (q[0] == 'y') {
+                        		ftruncate(fd, 0);
+					fsync(fd);
+					printf("done\n");
+					break;
+				}
+				else if (q[0] == 'n') {
+					break;
+				}	
+				else {
+                        		continue;
+				}
 			}
 			close(fd);
 		}
-		else { // display history
+		// otherwise print history
+		else { 
 			x = 0;
 			f = fopen(HISTFILE, "r");
 
@@ -437,7 +522,7 @@ int history(char line[1024], int builtin, int delete) {
 			}
 			while (fgets(theline, sizeof theline, f) != NULL) {
 				theline[strlen(theline) - 1] = '\0';
-				printf("%d: %s\n", x, theline);
+				printf("\t%d: %s\n", x, theline);
 				x++;
 			}
 			fclose(f);
