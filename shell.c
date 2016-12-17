@@ -19,24 +19,43 @@ const char* HISTFILE = "./shell/.history";
 
 child_process(char* token[99]) {
 	//printf("Now in the child process\n");
-
+	static int prog_found = 0;
 	char bindir[1048] = "./shell/bin/";
+	char* backupbindirs[4] = {"/bin/", "/usr/bin/", "/usr/sbin/", "/sbin/"};
+	int a;
 	char prog_to_run[1048]; 
+
+	// first try our coreutils. if not exist, look for system-provided utils
+	// run the concatenated program ie ./bin/progname. 
 	strcat(bindir, token[0]);
 	strcpy(prog_to_run, bindir);
 	
-	//printf("prog to run: %s\n", prog_to_run);
-	// run the concatenated program ie ./bin/progname. 
-	// visit 'builtins' func to check if program is not found
-	
-	if (execvp(prog_to_run, token) == -1) {
-		//(builtin_checker(token) == 1) ) 
-			printf("%s: command not found\n", token[0]);
+	if (access(prog_to_run, F_OK) == 0) {
+		if (execvp(prog_to_run, token) == -1) {
 			_exit(EXIT_FAILURE);
-		//}
+		}
 	}
 	else {
-		_exit(EXIT_SUCCESS);
+		for (a = 0; a < sizeof(backupbindirs)/sizeof(int); a++) {
+			prog_to_run[0] = '\0';
+			strcat(prog_to_run, backupbindirs[a]);
+			strcat(prog_to_run, token[0]);
+					
+			if (access(prog_to_run, F_OK) == 0) {
+				prog_found = 1;
+				//printf("found %d %s\n", a, prog_to_run);	
+				if (execvp(prog_to_run, token) == -1) {
+					_exit(EXIT_FAILURE);
+				}
+			}
+			else {
+				continue;
+			}
+		}
+	}
+	if (prog_found == 0) {
+		printf("%s: command not found\n", token[0]);
+		_exit(EXIT_FAILURE);
 	}
 }
 
@@ -327,7 +346,6 @@ int pipe_parser(char* token[99], int i) {
 				}
 			}
 
-			// THIS ONE MAY BE CAUSING PROBLEMS
 		 	// control for com1|com2 and not: com|com2|	
 			if (pos > 0)  {
 				//char* subfinaltok[99];
