@@ -20,7 +20,7 @@ Copyright Matthew Wilson, 20116.
 #define READ_END 0
 #define WRITE_END 1
 
-char* HISTFILE = "/shell/multi/.shellhistory";
+char* HISTFILE = "/shell/.shellhistory";
 const char bindir[1048] = "/shell/bin/";
 
 // if in 1st child, close read end

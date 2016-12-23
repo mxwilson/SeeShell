@@ -1,10 +1,14 @@
 ![alt_text](./seeshell.jpg "seeshell")
 
-# SeeShell 0.1
+# SeeShell 0.2
 
 ## Synopsis
 
 SeeShell is a Bash-like shell replacement for Unix and Linux.
+
+## Compilation
+
+$ make install
 
 ## Built-in commands
 
@@ -18,15 +22,19 @@ history [-c] - show history or clear history.
 
 pwd - print working directory.
 
-...
+## Features
 
-More to come
+- Support for pipes added in ver 0.2. ie: cmd1 | cmd2
 
-...
+- More to come.
 
-# Files
+## Files
 
-./.history - local history file
+Two global vars in main.c may be changed:
+
+char* HISTFILE = "/shell/.shellhistory" - shell history file
+
+const char bindir[1048] = "/shell/bin/" - if using provided coreutils-clones
 
 ## License
 
