@@ -3,7 +3,7 @@ prompt.c - part of seeshell - bash-like unix shell replacement
  
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 No warranty. Software provided as is.
-Copyright Matthew Wilson, 20116.
+Copyright Matthew Wilson, 2016-2018.
 */
 
 #include<stdio.h>
@@ -32,7 +32,7 @@ int prompt(void) {
                              
                 // otherwise proceed to history writer and arg_checker          
                 if (strlen(line) > 0) {
-                        if (history(line, 0, 0) != 0) {
+                        if (history(line, 0, 0, 0) != 0) {
                               return(1);
                         }
                         arg_checker(line);

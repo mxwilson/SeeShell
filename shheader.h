@@ -2,7 +2,7 @@
 #define SHHEADER_H
 
 /* prototypes for each additional function/file */
-int history(char line[1024], int builtin, int delete); /* history.c */
+int history(char line[1024], int builtin, int histoption, int reccount); /* history.c */
 int prompt(void); /* prompt.c */
 int arg_checker(char line[1024]); /* argchecker.c */
 int builtin_checker(char* token[99], int argc); /* builtins.c */

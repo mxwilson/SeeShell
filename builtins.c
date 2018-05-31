@@ -3,7 +3,7 @@ builtins.c - part of seeshell - bash-like unix shell replacement
  
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 No warranty. Software provided as is.
-Copyright Matthew Wilson, 20116.
+Copyright Matthew Wilson, 2016-2018.
 */
 
 #include<stdio.h>
@@ -13,6 +13,7 @@ Copyright Matthew Wilson, 20116.
 #include<errno.h>
 #include<pwd.h>
 #include<fcntl.h>
+#include<ctype.h>
 #include"shheader.h"
 
 int builtin_checker(char* token[20], int argc) {
@@ -106,19 +107,25 @@ int builtin_checker(char* token[20], int argc) {
 		if (getcwd(cwd, sizeof(cwd)) != NULL) {
 			printf("%s\n", cwd);
 		}
-		//return(0);
 	}
+	// clear screen
 	else if ((strcmp(token[0], "cl") == 0) || (strcmp(token[0], "clear") == 0)) {
-		system("clear");
-		//return(0);
+		//system("clear");
+		printf("\033c");
 	}
+	// history
 	else if (strcmp(token[0], "history") == 0) { 
 		if (argc == 1) {
-			history(NULL, 1, 0); // show history
+			history(NULL, 1, 0, 0); // show history
 		}
 		if (argc > 1) {	
+			int mynum = atoi(token[1]);
 			if (strcmp(token[1], "-c") == 0) {
-				history(NULL, 1, 1); // or delete history
+				history(NULL, 1, 1, 0); // or delete history
+			}
+			// or show n history items
+			else if (mynum) {
+				history(NULL, 1, 2, mynum);
 			}
 			else {
 				printf("history syntax err\n");
