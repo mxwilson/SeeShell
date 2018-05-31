@@ -18,7 +18,9 @@ cl, clear - clear screen.
 
 help - show help.
 
-history [-c] - show history or clear history.
+history - show history. flags:
+[-c] delete history.
+[n] print n items.
 
 pwd - print working directory.
 
@@ -38,7 +40,7 @@ const char bindir[1048] = "/shell/bin/" - if using provided coreutils-clones
 
 ## License
 
-Copyright 2016, Matthew Wilson. 
+Copyright 2016-2018, Matthew Wilson. 
 
 License GPLv3+: GNU GPL version 3 or later http://gnu.org/licenses/gpl.html. 
 No warranty. Software provided as is.
