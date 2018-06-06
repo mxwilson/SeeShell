@@ -1,3 +1,11 @@
+/*
+prompt.c - part of seeshell - bash-like unix shell replacement
+ 
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+No warranty. Software provided as is.
+Copyright Matthew Wilson, 2016-2018.
+*/
+
 #include<stdlib.h>
 #include<stdio.h>
 #include<unistd.h>
