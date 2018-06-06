@@ -1,6 +1,6 @@
 ![alt_text](./seeshell.jpg "seeshell")
 
-# SeeShell 0.2
+# SeeShell 0.3
 
 ## Synopsis
 
@@ -10,11 +10,13 @@ SeeShell is a Bash-like shell replacement for Unix and Linux.
 
 $ make install
 
+Requires gcc and libreadline-dev.
+
 ## Built-in commands
 
 cd - change directory (cd ~ (home), cd ~user, cd ~/dir, cd ~user/dir, etc ...)
 
-cl, clear - clear screen.
+cl, clear, CLRL+L clear screen.
 
 help - show help.
 
@@ -25,6 +27,8 @@ history - show history. flags:
 pwd - print working directory.
 
 ## Features
+
+- Support for tab completion and other readline goodies in ver 0.3
 
 - Support for pipes added in ver 0.2. ie: cmd1 | cmd2
 

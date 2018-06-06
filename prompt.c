@@ -1,41 +1,48 @@
-/*
-prompt.c - part of seeshell - bash-like unix shell replacement
- 
-License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
-No warranty. Software provided as is.
-Copyright Matthew Wilson, 2016-2018.
-*/
-
+#include<stdlib.h>
 #include<stdio.h>
 #include<unistd.h>
 #include<string.h>
+#include<readline/readline.h>
+#include<readline/history.h>
 #include"shheader.h"
 
-int prompt(void) {
-        char cwd[1024];
-        char line[1024];
-        
-        do {
-                if (getcwd(cwd, sizeof(cwd)) != NULL) {
-                        printf("%s> ", cwd);
-                }
-                else {
-                        printf("> ");
-                }
-                // wait for CTRL+D
-                if (fgets(line, sizeof(line), stdin) == NULL) {
-                        printf("\n");
-                        return(0);
-                }
+// compiled like this
+//gcc -Wall readprompt.c -o readprompt -lreadline
 
-                line[strlen(line) - 1] = '\0';
-                             
-                // otherwise proceed to history writer and arg_checker          
-                if (strlen(line) > 0) {
-                        if (history(line, 0, 0, 0) != 0) {
-                              return(1);
-                        }
-                        arg_checker(line);
-                } 
-        } while(1);
+int prompt(void) {
+        //if (argc > 1) {
+        //        rl_bind_key('\t', rl_insert);
+        //}
+	char cwd[300];
+        char* buf;
+	char shell_prompt[100];
+	char line[1024];
+
+	do {
+		getcwd(cwd, sizeof(cwd));
+		snprintf(shell_prompt, sizeof(shell_prompt), "%s> ", cwd);
+
+		buf = readline(shell_prompt); 
+
+		if (!buf) { // wait for CTRL+D
+			printf("\n");
+			return(0);
+		}
+		if (strlen(buf) < 1) { // empty line
+			continue;
+		}
+     		if (strlen(buf) > 0) { // otherwise add to internal history buffer 
+                	add_history(buf);
+                }
+		
+		strcpy(line, buf);
+		// add to our history file
+		if (history(line, 0, 0, 0) != 0) {
+			return(1);
+		}
+		arg_checker(line);
+		free(buf);
+        } while (1);
+
+return 0;
 }

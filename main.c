@@ -1,9 +1,9 @@
 /*
-seeshell.c - bash-like unix shell replacement
+seeshell.c - bash-like unix shell replacement - version 0.3
  
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 No warranty. Software provided as is.
-Copyright Matthew Wilson, 20116.
+Copyright Matthew Wilson, 2016-2018.
 */
 
 #include<stdio.h>
@@ -57,32 +57,15 @@ int pipe_read(char* cmdtorun[20], int fd[2]) {
         }
 }
 
-// some routine tests before starting
-int program_init() {
-	// start with the history file
-	FILE* fh;
-
-	fh = fopen(HISTFILE, "a+");
-	
-	if (fh == NULL) {
-		printf("history file error: %s\n%s\n", HISTFILE, strerror(errno));
-		return(1);
-	}		
-	fclose(fh);
-	return(0);
-}
-
 int main(int argc, char* argv[]) {
-	if (program_init() == 1) {
-		exit(EXIT_FAILURE);
-	}
-	printf("Welcome to seeshell\n");
+	printf("Welcome to Seeshell!\n");
+	
 	while(1) {
 		if (prompt() == 0) {
 			exit(EXIT_SUCCESS);
 		}
 		else {
-			printf("fail!\n");
+			printf("Fail! Unable to launch.\n");
 			exit(EXIT_FAILURE);
 		}
 	}

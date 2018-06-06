@@ -27,10 +27,10 @@ int history(char line[1024], int builtin, int histoption, int recstoprint) {
 	char* filelines[2000];
 	int maxhistory = 2000;
 
-	f = fopen(HISTFILE, "r+");
+	f = fopen(HISTFILE, "ab+");
 
 	if (f == NULL) {
-		printf("history file error: %s\n", strerror(errno));
+		printf("History file error: %s\n", strerror(errno));
 		return(1);
 	}
 	// first count lines to give us array size for filelines[nrecs]
@@ -105,7 +105,7 @@ int history(char line[1024], int builtin, int histoption, int recstoprint) {
 			}
 		
 			while(1) {
-               			printf("delete history? y/n\n");
+               			printf("Delete history? y/n: ");
                			fgets(q, sizeof (q), stdin);
 
 				if ((q[0] == 'y') || (strcmp(q, "yes") == 0)) {
@@ -131,28 +131,19 @@ int history(char line[1024], int builtin, int histoption, int recstoprint) {
 				printf("history file error: %s\n", strerror(errno));
 				return(1);
 			}
-			// here show n lines
-			if (histoption == 2) {
-				//printf("%d records\n", nrecs);
-				//printf("%d records to print\n", recstoprint);
-			
-				/* this works
-				for (x = 0; x < nrecs; x++) {
-					printf("! %d %s\n", x+1, filelines[x]);	
-				}*/
-				for (x = nrecs - recstoprint; x < nrecs; x++) {
-					printf("\t%d: %s\n", x + 1, filelines[x]);	
-				}
-
-			}	
-			// otherwise print all lines
-			else {
+			// show all lines, or show all lines if recstoprint is too big	
+			if ( (histoption != 2) || (recstoprint > nrecs) ) {
 				while (fgets(theline, sizeof theline, f) != NULL) {
 					theline[strlen(theline) - 1] = '\0';
 					printf("\t%d: %s\n", x + 1, theline);
 					x++;
 				}
 			}
+			else { // otherwise just print n lines
+				for (x = nrecs - recstoprint; x < nrecs; x++) {
+					printf("\t%d: %s\n", x + 1, filelines[x]);	
+				}
+			}	
 			fclose(f);
 		}	
 	}

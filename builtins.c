@@ -40,7 +40,7 @@ int builtin_checker(char* token[20], int argc) {
 				printf("%s: No such file or directory\n", token[1]+1);
 			}
 			if (chdir(thedir) != 0) {
-				printf("%s: %s\n", token[0], strerror(errno));
+				printf("%s: %s: %s\n", token[0], token[1], strerror(errno));
 				return(0);
 			}
 		}
@@ -82,22 +82,19 @@ int builtin_checker(char* token[20], int argc) {
 			}
 			// error out 
 			if (chdir(thedir) != 0) {
-				printf(":) %s: %s\n", thedir, strerror(errno));
-				//return(0);
+				printf("%s: %s\n", thedir, strerror(errno));
 			}	
 		}
 		// cd /somedir
-		else if (argc == 2) {
+		else if (argc == 2 || argc > 2) { // this argc>2 allows cd /validdir <arbitrary string>
 			if (chdir(token[1]) != 0) {
-				printf("%s: %s\n", token[0], strerror(errno));
-				//return(0);
+				printf("!-%s: %s: %s\n", token[0], token[1], strerror(errno));
 			}
 		}
 		// or attempt to cd(token0) to somedir(token1)
 		else if ((argc == 2) && (strncmp(token[1], "~", 1) != 0)) {
 			if (chdir(token[1]) != 0) {
-				printf("%s: %s\n", token[1], strerror(errno));
-				//return(0);
+				printf("!:)%s: %s\n", token[1], strerror(errno));
 			}
 		}
 	}
@@ -110,7 +107,6 @@ int builtin_checker(char* token[20], int argc) {
 	}
 	// clear screen
 	else if ((strcmp(token[0], "cl") == 0) || (strcmp(token[0], "clear") == 0)) {
-		//system("clear");
 		printf("\033c");
 	}
 	// history
@@ -135,7 +131,6 @@ int builtin_checker(char* token[20], int argc) {
 	}
 	else if (strcmp(token[0], "help") == 0) {
 		printf("go to help\n");
-		//return(0);
 	}
 	else if (strcmp(token[0], "exit") == 0) {
 		exit(EXIT_SUCCESS);
